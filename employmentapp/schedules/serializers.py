@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from employmentapp.schedules.models import Company, Position, Employee
+from employmentapp.schedules.constants import EventTypeE
+from employmentapp.schedules.models import Company, Position, Employee, Event
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -67,3 +68,35 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'position_name'
         )
 
+
+class EventSerializer(serializers.ModelSerializer):
+
+    def getEmployeeName(self, obj):
+        return obj.employee.user.username
+
+    def getEventTypeName(self, obj):
+        return EventTypeE(obj.event_type).name
+
+    def getCreatedAtDate(self, obj):
+        return obj.created_at
+
+    def getHoursCount(self, obj):
+        return (obj.to_date - obj.from_date) / 3600
+
+    employee_name = serializers.SerializerMethodField("getEmployeeName")
+    event_type_name = serializers.SerializerMethodField("getEventTypeName")
+    created_at_date = serializers.SerializerMethodField("getCreatedAtDate")
+    hours_count = serializers.SerializerMethodField("getHoursCount")
+
+    class Meta:
+        model = Event
+        fields = (
+            'id',
+            'employee_name',
+            'event_type',
+            'event_type_name',
+            'created_at_date',
+            'from_date',
+            'to_date',
+            'hours_count'
+        )
